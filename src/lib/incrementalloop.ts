@@ -17,11 +17,7 @@ export class IncrementalLoop {
   async start(): Promise<void> {
     const release = await this.mutex.acquire();
     try {
-      if (this.deinitCalled) {
-        return;
-      }
-
-      if (this.stopLoop === null) {
+      if (this.stopLoop === null && !this.deinitCalled) {
         this.stopLoop = asyncLoop(this.callback, this.timeout);
       }
 
@@ -34,13 +30,26 @@ export class IncrementalLoop {
   async stop(): Promise<void> {
     const release = await this.mutex.acquire();
     try {
-      if (this.counter === 0 || this.deinitCalled) {
+      if (this.counter === 0) {
         return;
       }
 
       if (--this.counter === 0) {
         await this.stopLoop?.();
         this.stopLoop = null;
+      }
+    } finally {
+      release();
+    }
+  }
+
+  async init(): Promise<void> {
+    const release = await this.mutex.acquire();
+    try {
+      this.deinitCalled = false;
+
+      if (this.stopLoop === null && this.counter > 0) {
+        this.stopLoop = asyncLoop(this.callback, this.timeout);
       }
     } finally {
       release();

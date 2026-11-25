@@ -1,11 +1,12 @@
+import { FC, useEffect } from "react";
 import { useBuddyStatus, useCurrentHostSettings, useCurrentSettings, useMoonDeckAppData, useServerStatus } from "../../hooks";
 import { ExternalAppsPanel } from "./externalappspanel";
-import { FC } from "react";
 import { GameSessionPanel } from "./gamesessionpanel";
 import { HostAppPanel } from "./hostapppanel";
 import { HostCommandPanel } from "./hostcommandpanel";
 import { HostStatusPanel } from "./hoststatuspanel";
 import { ResolutionPanel } from "./resolutionpanel";
+import { logger } from "../../lib";
 import { useQuickAccessVisible } from "@decky/api";
 
 export const QuickSettingsView: FC = () => {
@@ -15,6 +16,10 @@ export const QuickSettingsView: FC = () => {
   const currentHostSettings = useCurrentHostSettings();
   const currentSettings = useCurrentSettings();
   const appData = useMoonDeckAppData();
+
+  useEffect(() => {
+    logger.debug(`QuickAccess visibility changed: ${isVisible}`);
+  }, [isVisible]);
 
   return (
     <>

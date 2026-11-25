@@ -26,6 +26,9 @@ export class ConnectivityManager {
   }
 
   init(): void {
+    this.serverAutoRefresh.init().catch((e) => logger.critical(e));
+    this.buddyAutoRefresh.init().catch((e) => logger.critical(e));
+    this.subscription?.unsubscribe();
     this.subscription = new Subscription();
     this.subscription.add(this.settingsManager.settings.asObservable().subscribe(() => {
       this.refresh().catch((e) => logger.critical(e));
