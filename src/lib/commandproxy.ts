@@ -184,6 +184,9 @@ export class CommandProxy {
 
   async wakeOnLan(): Promise<void> {
     await this.invokeCallback(async (_, { hostName, address, mac, wolSettings }) => {
+      if (!wolSettings.enabled) {
+        return;
+      }
       await wakeOnLan(hostName, address, mac, wolSettings.port, wolSettings.useCustomWolExec ? wolSettings.customWolExecPath : null);
       await sleep(defaultSleepForUX);
     }, { ...defaultInvocationOptions, validBuddyStatus: ["Offline"], validServerStatus: ["Offline"] });

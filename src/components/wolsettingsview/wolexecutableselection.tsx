@@ -25,6 +25,9 @@ export const WOLExecutableSelection: FC<Props> = ({ hostSettings }) => {
     }).catch((error) => logger.error(error));
   };
 
+  const wolEnabled = hostSettings.wolSettings.enabled;
+  const customExecEnabled = wolEnabled && hostSettings.wolSettings.useCustomWolExec;
+
   return (
     <>
       <ToggleField
@@ -35,6 +38,7 @@ export const WOLExecutableSelection: FC<Props> = ({ hostSettings }) => {
             <div>This setting makes it send WOL only once when both Buddy and Host are definitelly off and there is still time for WOL.</div>
           </>
         }
+        disabled={!wolEnabled}
         value={hostSettings.wolSettings.sendOnce}
         setValue={(value) => settingsManager.updateHost((settings) => { settings.wolSettings.sendOnce = value; })}
       />
@@ -47,6 +51,7 @@ export const WOLExecutableSelection: FC<Props> = ({ hostSettings }) => {
           </>
         }
         bottomSeparator="none"
+        disabled={!wolEnabled}
         value={hostSettings.wolSettings.useCustomWolExec}
         setValue={(value) => settingsManager.updateHost((settings) => { settings.wolSettings.useCustomWolExec = value; })}
       />
@@ -56,14 +61,14 @@ export const WOLExecutableSelection: FC<Props> = ({ hostSettings }) => {
       >
         <Focusable style={{ display: "grid", gap: "10px", gridTemplateColumns: "1fr auto" }}>
           <AnyTextInput
-            disabled={!hostSettings.wolSettings.useCustomWolExec}
+            disabled={!customExecEnabled}
             value={hostSettings.wolSettings.customWolExecPath}
             setValue={(value) => settingsManager.updateHost((settings) => { settings.wolSettings.customWolExecPath = value; })}
           />
           <DialogButton
             style={{ minWidth: "initial", width: "initial" }}
-            disabled={!hostSettings.wolSettings.useCustomWolExec}
-            focusable={hostSettings.wolSettings.useCustomWolExec}
+            disabled={!customExecEnabled}
+            focusable={customExecEnabled}
             onClick={() => browseForExec()}
           >
             Browse

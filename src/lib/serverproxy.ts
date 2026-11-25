@@ -133,6 +133,8 @@ export class ServerProxy {
           showQuickAccessButton: currentSettings?.nonSteamApps.showQuickAccessButton ?? false
         },
         wolSettings: {
+          enabled: currentSettings?.wolSettings.enabled ?? true,
+          promptBeforeWake: currentSettings?.wolSettings.promptBeforeWake ?? true,
           useCustomWolExec: currentSettings?.wolSettings.useCustomWolExec ?? false,
           sendOnce: currentSettings?.wolSettings.sendOnce ?? false,
           customWolExecPath: currentSettings?.wolSettings.customWolExecPath ?? "",

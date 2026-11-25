@@ -5,6 +5,7 @@ import { getEnvKeyValueString, makeEnvKeyValue } from "./envutils";
 import { AppDetails } from "@decky/ui/dist/globals/steam-client/App";
 import { AppSyncState } from "./appsyncstate";
 import { CommandProxy } from "./commandproxy";
+import { ConnectivityManager } from "./connectivitymanager";
 import { EThirdPartyControllerConfiguration } from "@decky/ui/dist/globals/steam-client/Input";
 import { ExternalAppShortcuts } from "./externalappshortcuts";
 import { MoonDeckAppProxy } from "./moondeckapp";
@@ -129,12 +130,20 @@ export function updateControllerConfig(appId: number, controllerConfig: keyof ty
   }
 }
 
+export type WolPromptResult =
+  { action: "wake"; dontAskAgain: boolean } |
+  { action: "decline"; dontAskAgain: boolean } |
+  { action: "dismiss" };
+
+export type WolPromptHandler = (hostName: string) => Promise<WolPromptResult>;
+
 export class MoonDeckAppLauncher {
   private unregisterLifetime: (() => void) | null = null;
   private unregisterSuspension: (() => void) | null = null;
   private unregisterInterceptor: (() => void) | null = null;
   private interceptedLaunch = false;
   private subscription: Subscription | null = null;
+  readonly commandProxy: CommandProxy;
   readonly moonDeckApp: MoonDeckAppProxy;
 
   private async ensureAppDetails(steamAppId: number, execPath: string, appName: string, appType: AppType): Promise<AppDetails | null> {
@@ -280,9 +289,11 @@ export class MoonDeckAppLauncher {
     private readonly settingsManager: SettingsManager,
     private readonly moonDeckAppShortcuts: MoonDeckAppShortcuts,
     private readonly externalAppShortcuts: ExternalAppShortcuts,
-    readonly commandProxy: CommandProxy
+    private readonly connectivityManager: ConnectivityManager,
+    private readonly wolPromptHandler: WolPromptHandler
   ) {
-    this.moonDeckApp = new MoonDeckAppProxy(commandProxy);
+    this.commandProxy = connectivityManager.commandProxy;
+    this.moonDeckApp = new MoonDeckAppProxy(this.commandProxy);
   }
 
   init(): void {
@@ -347,6 +358,46 @@ export class MoonDeckAppLauncher {
       logger.toast("Currently syncing syncing/purging apps!");
       return;
     }
+
+    const hostId = settings.currentHostId;
+    if (hostSettings.wolSettings.enabled && hostSettings.wolSettings.promptBeforeWake && hostSettings.runnerTimeouts.wakeOnLan > 0) {
+      await this.connectivityManager.refresh();
+
+      if (this.settingsManager.settings.value?.currentHostId !== hostId) {
+        logger.log("Selected host changed while checking host status, aborting launch.");
+        return;
+      }
+
+      const isHostOffline =
+        this.connectivityManager.serverProxy.status.value === "Offline" &&
+        this.connectivityManager.buddyProxy.status.value === "Offline";
+
+      if (isHostOffline) {
+        const result = await this.wolPromptHandler(hostSettings.hostName);
+        if (result.action === "dismiss") {
+          return;
+        }
+
+        if (result.action === "decline") {
+          if (result.dontAskAgain) {
+            this.settingsManager.updateHost((host) => {
+              host.wolSettings.enabled = false;
+              host.wolSettings.promptBeforeWake = false;
+            });
+            this.settingsManager.flush();
+          }
+          return;
+        }
+
+        if (result.dontAskAgain) {
+          this.settingsManager.updateHost((host) => {
+            host.wolSettings.promptBeforeWake = false;
+          });
+        }
+      }
+    }
+
+    this.settingsManager.flush();
 
     try {
       this.appSyncState.setState(false, AppType.MoonDeck);

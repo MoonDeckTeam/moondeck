@@ -14,3 +14,4 @@ export * from "./statusfield";
 export * from "./settingsloadingfield";
 export * from "./textinput";
 export * from "./togglefield";
+export * from "./wolpromptmodal";

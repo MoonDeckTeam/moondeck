@@ -74,6 +74,8 @@ class NonSteamAppsSettings(TypedDict):
 
 
 class WolSettings(TypedDict):
+    enabled: bool
+    promptBeforeWake: bool
     useCustomWolExec: bool
     sendOnce: bool
     customWolExecPath: str
@@ -124,7 +126,7 @@ class ButtonStyleSettings(TypedDict):
 
 
 class UserSettings(TypedDict):
-    version: Literal[44]
+    version: Literal[45]
     clientId: str
     currentHostId: Optional[str]
     gameSession: GameSessionSettings
@@ -409,3 +411,8 @@ class UserSettingsManager(SettingsManager[UserSettings]):
         if data["version"] == 43:
             data["version"] = 44
             data["setupCommand"] = ""
+        if data["version"] == 44:
+            data["version"] = 45
+            for host in data["hostSettings"].keys():
+                data["hostSettings"][host]["wolSettings"]["enabled"] = True
+                data["hostSettings"][host]["wolSettings"]["promptBeforeWake"] = True

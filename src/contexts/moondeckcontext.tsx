@@ -7,6 +7,7 @@ import { MoonDeckAppLauncher } from "../lib/moondeckapplauncher";
 import { MoonDeckAppShortcuts } from "../lib/moondeckappshortcuts";
 import { SettingsManager } from "../lib/settingsmanager";
 import { createContext } from "react";
+import { showWolPromptModal } from "../components/shared/wolpromptmodal";
 
 export interface MoonDeckContextType {
   appSyncState: AppSyncState;
@@ -30,7 +31,7 @@ export function getDefaultContext(makeNew = false): MoonDeckContextType {
     context.settingsManager = new SettingsManager();
     context.connectivityManager = new ConnectivityManager(context.settingsManager);
     context.externalAppShortcuts = new ExternalAppShortcuts(context.appSyncState, context.connectivityManager.buddyProxy, context.settingsManager);
-    context.moonDeckAppLauncher = new MoonDeckAppLauncher(context.appSyncState, context.settingsManager, context.moonDeckAppShortcuts, context.externalAppShortcuts, context.connectivityManager.commandProxy);
+    context.moonDeckAppLauncher = new MoonDeckAppLauncher(context.appSyncState, context.settingsManager, context.moonDeckAppShortcuts, context.externalAppShortcuts, context.connectivityManager, showWolPromptModal);
   }
   return context;
 }

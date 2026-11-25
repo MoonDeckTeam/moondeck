@@ -23,25 +23,32 @@ export const HostCommandPanel: FC<Props> = ({ serverStatus, buddyStatus, current
     }
   };
 
+  const wolEnabled = currentHostSettings.wolSettings.enabled;
   const hibernateHost = currentHostSettings.buddy.hibernateHost;
   const statusChangeCanBeAborted = validAbortPcStateChangeStates.includes(buddyStatus);
-  const enableWolButton = !executionStatus && (statusChangeCanBeAborted || (serverStatus === "Offline" && buddyStatus === "Offline"));
+  const showWolButton = wolEnabled || statusChangeCanBeAborted;
+  const enableWolButton = !executionStatus && (statusChangeCanBeAborted || (wolEnabled && serverStatus === "Offline" && buddyStatus === "Offline"));
   return (
     <PanelSection title="COMMANDS" spinner={executionStatus}>
-      <PanelSectionRow>
-        <ButtonItem
-          layout="below"
-          bottomSeparator="none"
-          disabled={!enableWolButton}
-          onClick={executeAsyncWrapper(async () => {
-            if (!statusChangeCanBeAborted || !await connectivityManager.commandProxy.abortPcStateChange()) {
-              await connectivityManager.commandProxy.wakeOnLan();
-            }
-          })}
-        >
-          Wake On LAN
-        </ButtonItem>
-      </PanelSectionRow>
+      {
+        showWolButton &&
+        <PanelSectionRow>
+          <ButtonItem
+            layout="below"
+            bottomSeparator="none"
+            disabled={!enableWolButton}
+            onClick={executeAsyncWrapper(async () => {
+              if (!statusChangeCanBeAborted || !await connectivityManager.commandProxy.abortPcStateChange()) {
+                if (wolEnabled) {
+                  await connectivityManager.commandProxy.wakeOnLan();
+                }
+              }
+            })}
+          >
+            {statusChangeCanBeAborted && !wolEnabled ? "Cancel PC state change" : "Wake On LAN"}
+          </ButtonItem>
+        </PanelSectionRow>
+      }
       <PanelSectionRow>
         <ButtonItem
           layout="below"

@@ -105,6 +105,8 @@ export interface NonSteamAppsSettings {
 }
 
 export interface WolSettings {
+  enabled: boolean;
+  promptBeforeWake: boolean;
   useCustomWolExec: boolean;
   sendOnce: boolean;
   customWolExecPath: string;
@@ -265,6 +267,10 @@ export class SettingsManager {
     this.setUserSettingsThrottled.flush();
     this.refreshInProgressSubject.next(false);
     this.settingsSubject.next(null);
+  }
+
+  flush(): void {
+    this.setUserSettingsThrottled.flush();
   }
 
   update(callback: (settings: UserSettings) => void): void {

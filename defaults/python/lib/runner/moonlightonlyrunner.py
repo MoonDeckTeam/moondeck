@@ -74,7 +74,7 @@ class MoonlightOnlyRunner:
                                          wol_port=settings["wol_port"],
                                          send_wol_once=settings["send_wol_once"],
                                          custom_wol_exec=settings["custom_wol_exec_path"],
-                                         wol_timeout=settings["timeouts"]["wakeOnLan"],
+                                         wol_timeout=settings["timeouts"]["wakeOnLan"] if settings["wol_enabled"] else 0,
                                          server_timeout=settings["timeouts"]["servicePing"])
             await cls.start_moonlight(proxy=proxy,
                                       hostname=settings["hostname"],

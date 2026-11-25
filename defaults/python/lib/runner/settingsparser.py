@@ -33,6 +33,7 @@ class MoonDeckAppRunnerSettings(TypedDict):
     close_steam: Optional[CloseSteam]
     timeouts: RunnerTimeouts
     moonlight_exec_path: Optional[str]
+    wol_enabled: bool
     send_wol_once: bool
     custom_wol_exec_path: Optional[str]
     wol_port: int
@@ -55,6 +56,7 @@ class MoonlightOnlyRunnerSettings(TypedDict):
     client_id: str
     timeouts: RunnerTimeouts
     moonlight_exec_path: Optional[str]
+    wol_enabled: bool
     send_wol_once: bool
     custom_wol_exec_path: Optional[str]
     wol_port: int
@@ -200,6 +202,7 @@ async def parse_settings() -> MoonDeckAppRunnerSettings | MoonlightOnlyRunnerSet
             "close_steam": CloseSteam[host_settings["buddy"]["closeSteam"]] if host_settings["buddy"]["closeSteam"] else None,
             "timeouts": host_settings["runnerTimeouts"],
             "moonlight_exec_path": user_settings["moonlightExecPath"] if user_settings["useMoonlightExec"] else None,
+            "wol_enabled": host_settings["wolSettings"]["enabled"],
             "send_wol_once": host_settings["wolSettings"]["sendOnce"],
             "custom_wol_exec_path": host_settings["wolSettings"]["customWolExecPath"] if host_settings["wolSettings"]["useCustomWolExec"] else None,
             "wol_port": host_settings["wolSettings"]["port"],
@@ -225,6 +228,7 @@ async def parse_settings() -> MoonDeckAppRunnerSettings | MoonlightOnlyRunnerSet
             "client_id": user_settings["clientId"],
             "timeouts": host_settings["runnerTimeouts"],
             "moonlight_exec_path": user_settings["moonlightExecPath"] if user_settings["useMoonlightExec"] else None,
+            "wol_enabled": host_settings["wolSettings"]["enabled"],
             "send_wol_once": host_settings["wolSettings"]["sendOnce"],
             "custom_wol_exec_path": host_settings["wolSettings"]["customWolExecPath"] if host_settings["wolSettings"]["useCustomWolExec"] else None,
             "wol_port": host_settings["wolSettings"]["port"],
